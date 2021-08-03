@@ -1,15 +1,15 @@
-From 0529077dca15c6c94f24c3f4fe5d5f63ebb39fea Mon Sep 17 00:00:00 2001
+From a1b9264a507270239963de2759fcf416fda947ab Mon Sep 17 00:00:00 2001
 From: Nagesh <nagesh.shamnur@huawei.com>
-Date: Mon, 2 Aug 2021 14:15:49 +0530
+Date: Tue, 3 Aug 2021 20:21:29 +0530
 Subject: [PATCH 1/1] makefile changes
 
 Signed-off-by: Nagesh <nagesh.shamnur@huawei.com>
 ---
- device_qemu/riscv32_virt/Makefile | 64 +++++++++++++++++++++----------------------
- 1 file changed, 32 insertions(+), 32 deletions(-)
+ device_qemu/riscv32_virt/Makefile | 68 +++++++++++++++++++++----------------------
+ 1 file changed, 34 insertions(+), 34 deletions(-)
 
 diff --git a/device_qemu/riscv32_virt/Makefile b/device_qemu/riscv32_virt/Makefile
-index f6a6922..6f07329 100755
+index f6a6922..5a6cda9 100755
 --- a/device_qemu/riscv32_virt/Makefile
 +++ b/device_qemu/riscv32_virt/Makefile
 @@ -12,8 +12,8 @@
@@ -78,7 +78,7 @@ index f6a6922..6f07329 100755
  
  CC = $(CROSS_COMPILE)gcc
  AS  = $(CROSS_COMPILE)as
-@@ -81,11 +81,11 @@ MAKE = make
+@@ -81,36 +81,36 @@ MAKE = make
  OUT    := out
  OBJOUT := $(OUT)/obj
  LIBA = $(OUT)/libs/libkernel.a
@@ -92,8 +92,10 @@ index f6a6922..6f07329 100755
  
  LITEOS_SSP = -fno-stack-protector
  LITEOS_COPTS_BASE  := -march=$(MARCH) -mabi=$(MABI) -static -fno-common -O2 $(LITEOS_SSP)
-@@ -94,22 +94,22 @@ LITEOS_COPTS_EXTRA := -ffunction-sections -fdata-sections -fno-omit-frame-pointe
-                       -fsigned-char -fstack-protector-all -std=c99 #-Wall
+ LITEOS_COPTS_EXTRA := -ffunction-sections -fdata-sections -fno-omit-frame-pointer -Wno-format-truncation \
+                       -fno-omit-frame-pointer -Wno-format-truncation  -nostdlib  -fno-builtin -fno-strict-aliasing \
+-                      -fsigned-char -fstack-protector-all -std=c99 #-Wall
++                      -fsigned-char -fstack-protector-all -std=c99 -Wl,--build-id=none #-Wall
  LITEOS_ASOPTS      := -march=$(MARCH) -mabi=$(MABI) -static -O2
  LITEOS_LD_OPTS     := -Wl,-mcmodel=medany -Wl,-melf32lriscv -nostartfiles -Wl,--gc-sections
 -LITEOS_COMPILER_PATH := $(realpath $(shell $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/compiler_dir.sh  $(CC)))
@@ -124,10 +126,12 @@ index f6a6922..6f07329 100755
  LITEOS_CFLAGS  := $(LITEOS_COPTS_BASE) $(LITEOS_COPTS_EXTRA) -DLOSCFG_LIB_LIBC -DLOSCFG_TEST_DEMO=1
  LITEOS_ASFLAGS := $(LITEOS_ASOPTS)
 -LITEOS_LD_SCRIPT := $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/Liteos.ld
+-LITEOS_LDFLAGS := $(LITEOS_LD_OPTS) $(LITEOS_COPTS_BASE) -Wl,-T$(LITEOS_LD_SCRIPT) $(LITEOS_LIBS_DIR) $(LITEOS_COMPILER_GCCLIB_PATH)
 +LITEOS_LD_SCRIPT := $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/Liteos.ld
- LITEOS_LDFLAGS := $(LITEOS_LD_OPTS) $(LITEOS_COPTS_BASE) -Wl,-T$(LITEOS_LD_SCRIPT) $(LITEOS_LIBS_DIR) $(LITEOS_COMPILER_GCCLIB_PATH)
++LITEOS_LDFLAGS := $(LITEOS_LD_OPTS) $(LITEOS_COPTS_BASE) -Wl,-T$(LITEOS_LD_SCRIPT) $(LITEOS_LIBS_DIR) $(LITEOS_COMPILER_GCCLIB_PATH) -Wl,--build-id=none
  
  LOCAL_FLAGS := $(CFLAGS) $(LITEOS_COMPILER_GCC_INCLUDE)
+ LOCAL_COBJS := $(patsubst %.c,$(OBJOUT)/%.o,$(LOCAL_CSRCS))
 -- 
 2.25.1
 
