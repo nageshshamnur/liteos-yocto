@@ -1,0 +1,125 @@
+diff --git a/boards/arm/arduino_nano_33_ble/CMakeLists.txt b/boards/arm/arduino_nano_33_ble/CMakeLists.txt
+index 9e885f42ab..9ff0f80ab4 100644
+--- a/boards/arm/arduino_nano_33_ble/CMakeLists.txt
++++ b/boards/arm/arduino_nano_33_ble/CMakeLists.txt
+@@ -11,3 +11,7 @@ if(CONFIG_BOARD_ARDUINO_NANO_33_BLE_INIT_SENSORS)
+   zephyr_library_sources("${CMAKE_CURRENT_SOURCE_DIR}/src/init_sensors.c")
+   target_link_libraries(${ZEPHYR_CURRENT_LIBRARY} PRIVATE arduino_nano_33_ble_pins)
+ endif()
++
++
++zephyr_library()
++zephyr_library_sources("${CMAKE_CURRENT_SOURCE_DIR}/src/init_usb_cdc_acm.c")
+\ No newline at end of file
+diff --git a/boards/arm/arduino_nano_33_ble/Kconfig.board b/boards/arm/arduino_nano_33_ble/Kconfig.board
+index 476a9123da..9dffe6ff69 100644
+--- a/boards/arm/arduino_nano_33_ble/Kconfig.board
++++ b/boards/arm/arduino_nano_33_ble/Kconfig.board
+@@ -18,3 +18,7 @@ config BOARD_ARDUINO_NANO_33_BLE_EN_USB_CONSOLE
+ config BOARD_ARDUINO_NANO_33_BLE_INIT_SENSORS
+ 	bool "Initializes the internal I2C sensors on the board"
+ 	depends on BOARD_ARDUINO_NANO_33_BLE
++
++config BOARD_ARDUINO_NANO_33_BLE_INIT_USB_CDC_ACM
++	bool "enable USB CDC_ACM interface after flashing"
++	depends on BOARD_ARDUINO_NANO_33_BLE
+\ No newline at end of file
+diff --git a/boards/arm/arduino_nano_33_ble/Kconfig.defconfig b/boards/arm/arduino_nano_33_ble/Kconfig.defconfig
+index 937aba0014..8e27a1977f 100644
+--- a/boards/arm/arduino_nano_33_ble/Kconfig.defconfig
++++ b/boards/arm/arduino_nano_33_ble/Kconfig.defconfig
+@@ -10,6 +10,10 @@ config USB_NRFX
+ 	default y
+ config USB_DEVICE_STACK
+ 	default y
++config SERIAL
++       default USB_CDC_ACM
++config UART_INTERRUPT_DRIVEN
++        default USB_CDC_ACM
+ endif # USB
+ 
+ config BT_CTLR
+diff --git a/boards/arm/arduino_nano_33_ble/arduino_nano_33_ble_defconfig b/boards/arm/arduino_nano_33_ble/arduino_nano_33_ble_defconfig
+index ba8eeee931..5551c9cc3d 100644
+--- a/boards/arm/arduino_nano_33_ble/arduino_nano_33_ble_defconfig
++++ b/boards/arm/arduino_nano_33_ble/arduino_nano_33_ble_defconfig
+@@ -19,3 +19,16 @@ CONFIG_BOOTLOADER_BOSSA_LEGACY=y
+ 
+ # additional board options
+ CONFIG_GPIO_AS_PINRESET=y
++
++# Following configuration are need to enable virtual com port via USB CDC_ACM 
++# This will enble console as well as shell on USB CDC_ACM 
++CONFIG_USB=y
++CONFIG_USB_DEVICE_STACK=y
++CONFIG_USB_DEVICE_PRODUCT="zephyr application with CDC_ACM enabled"
++CONFIG_USB_UART_CONSOLE=y
++CONFIG_UART_LINE_CTRL=y
++CONFIG_UART_CONSOLE_ON_DEV_NAME="CDC_ACM_0"
++CONFIG_UART_SHELL_ON_DEV_NAME="CDC_ACM_0"
++CONFIG_BOARD_ARDUINO_NANO_33_BLE_INIT_USB_CDC_ACM=y
++CONFIG_SHELL=y
++CONFIG_SHELL_BACKEND_SERIAL=y
+diff --git a/boards/arm/arduino_nano_33_ble/src/init_usb_cdc_acm.c b/boards/arm/arduino_nano_33_ble/src/init_usb_cdc_acm.c
+new file mode 100644
+index 0000000000..856dc737b0
+--- /dev/null
++++ b/boards/arm/arduino_nano_33_ble/src/init_usb_cdc_acm.c
+@@ -0,0 +1,44 @@
++#include <usb/usb_device.h>
++#include <drivers/uart.h>
++
++#ifdef CONFIG_BOARD_ARDUINO_NANO_33_BLE_INIT_USB_CDC_ACM 
++static int board_internal_usb_cdc_acm_init(const struct device *dev)
++{
++        ARG_UNUSED(dev);
++        uint64_t end = sys_clock_timeout_end_calc(K_MSEC(2000));
++        const struct device *device = device_get_binding(
++                        CONFIG_UART_CONSOLE_ON_DEV_NAME);
++        uint32_t dtr = 0;
++
++        if (device == NULL) {
++	        return -ENODEV;
++        }
++
++        if (usb_enable(NULL)) {
++                return -EIO;
++        }
++
++        /* Poll if the DTR flag was set, optional */
++        do { 
++                int64_t remaining = end - sys_clock_tick_get();
++
++                if (remaining <= 0) {
++                        return -EIO;
++                }
++
++                uart_line_ctrl_get(device, UART_LINE_CTRL_DTR, &dtr);
++                k_sleep(K_MSEC(100));
++        } while(!dtr);
++
++        if (strncmp(CONFIG_UART_CONSOLE_ON_DEV_NAME, "CDC_ACM_0",
++                    strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME))) {
++                printk("Error: Console device name is not USB ACM\n");
++
++                return -ENXIO;
++        }
++
++
++        return 0;
++}
++SYS_INIT(board_internal_usb_cdc_acm_init, APPLICATION, 32);
++#endif
+diff --git a/subsys/shell/shell_uart.c b/subsys/shell/shell_uart.c
+index de3987b558..1872249eee 100644
+--- a/subsys/shell/shell_uart.c
++++ b/subsys/shell/shell_uart.c
+@@ -312,7 +312,7 @@ static int enable_shell_uart(const struct device *arg)
+ 
+ 	return 0;
+ }
+-SYS_INIT(enable_shell_uart, POST_KERNEL,
++SYS_INIT(enable_shell_uart, APPLICATION,
+ 	 CONFIG_SHELL_BACKEND_SERIAL_INIT_PRIORITY);
+ 
+ const struct shell *shell_backend_uart_get_ptr(void)

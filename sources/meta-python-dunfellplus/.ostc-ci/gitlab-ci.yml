@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Copyright 2020-2021 Huawei Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+.stage:
+  stage: test
+  image:
+    name: registry.ostc-eu.org/ostc/containers/ostc-builder:latest
+  before_script:
+    # Bitbake requires a non-root user to operate.
+    # The container should have a non-root user by default.
+    - test "$(id -u)" -ne 0 || ( echo "precondition failed - this job cannot run as root" && exit 1 )
+
+    # Create scratch space, being careful not to pollute the working directory.
+    - SCRATCH_DIR="$(mktemp -d)"
+    - echo "$SCRATCH_DIR" > "$CI_PROJECT_DIR"/.scratch-dir-name
+
+    - cd "$SCRATCH_DIR"
+
+    # Clone poky and meta-openembedded at the dunfell branch. This repository
+    # is an extension built on top of dunfell, so those have to be in sync.
+    #
+    # FIXME: use local mirror to speed up this step.
+    # https://git.ostc-eu.org/OSTC/infrastructure/ostc-manifest-mirror/-/issues/1
+    - git clone --depth 1 --branch dunfell git://git.yoctoproject.org/poky.git
+
+    # FIXME: use local mirror to speed up this step.
+    # https://git.ostc-eu.org/OSTC/infrastructure/ostc-manifest-mirror/-/issues/2
+    - git clone --depth 1 --branch dunfell git://git.openembedded.org/meta-openembedded.git
+
+  script: &stage-do
+    # Reload the value of SCRATCH_DIR set in the before_script phase. Those run
+    # in separate shell processes and do not share environment variables.
+    - SCRATCH_DIR="$(cat "$CI_PROJECT_DIR"/.scratch-dir-name)"
+    - cd "$SCRATCH_DIR" && . ./poky/oe-init-build-env build
+    # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    # NOTE: From now on, we are running inside "$SCRATCH_DIR"/build
+    # with bash modified by oe-init-build-env. We now have access to bitbake,
+    # devtool and other related tools.
+    # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    # Point to https://example.net instead of the default https://example.com.
+    # The OSTC cloud provider has misconfigured DNS which resolves the latter incorrectly.
+    - echo 'CONNECTIVITY_CHECK_URIS = "https://example.net/"' >> "$SCRATCH_DIR"/build/conf/local.conf
+
+
+  after_script:
+    # Reload the value of SCRATCH_DIR set in the before_script phase.
+    - SCRATCH_DIR="$(cat "$CI_PROJECT_DIR"/.scratch-dir-name)"
+    # Clean up after ourselves.
+    - rm -f "$CI_PROJECT_DIR"/.scratch-dir-name
+    - rm -rf "$SCRATCH_DIR"
+
+check-layer:
+  extends: .stage
+  script:
+    - *stage-do
+    # Run yocto-layer-check with the meta-python and meta-oe layers as dependencies.
+    - yocto-check-layer --dependency "$SCRATCH_DIR"/meta-openembedded/meta-python/ "$SCRATCH_DIR"/meta-openembedded/meta-oe/ --with-software-layer-signature-check --debug "$CI_PROJECT_DIR"

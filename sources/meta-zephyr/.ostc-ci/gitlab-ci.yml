@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Huawei Inc.
+
+stages:
+  - compliance
+  - build
+  - test
+  - report
+
+include:
+ - project: 'OSTC/infrastructure/pipelines'
+   file:
+    - 'dco.yaml'
+    - 'reuse.yaml'
+ - project: 'OSTC/OHOS/manifest'
+   file: '.ostc-ci/build-generic.yaml'
+ - project: 'OSTC/OHOS/manifest'
+   file: '.ostc-ci/test-generic.yaml'
+
+dco:
+  extends: .dco
+
+reuse:
+  extends: .reuse
+  # TODO: file tracking bug
+  allow_failure: true
+
+# Customize the .workspace job to set the path of the git repository to deviate
+# from what the git-repo manifest prepares. This effectively allows testing
+# incoming changes that match the repository holding this CI pipeline.
+.workspace:
+  variables:
+    OHOS_CI_GIT_REPO_PATH: sources/meta-zephyr
+
+# Disable Linux and FreeRTOS builds that are unlikely to be affected by Zephyr
+# changes and certainly save some time.
+.build-linux:
+  rules:
+    - when: never
+
+.build-freertos:
+  rules:
+    - when: never
+
+##
+## Submit jobs to LAVA
+##
+lava-zephyr-96b-nitrogen:
+  needs: [zephyr-96b-nitrogen]
+  stage: test
+  extends: .lava-test
+  variables:
+    CI_LAVA_JOB_DEFINITION: "https://git.ostc-eu.org/OSTC/infrastructure/lava/lava-config/-/raw/master/lava.ostc-eu.org/job-definitions/ci/nitrogen-boot.yaml"
+    CI_BUILD_JOB_NAME: zephyr-96b-nitrogen
+    CI_REPORT_JOB_NAME: lava-report
+
+lava-zephyr-qemu-cortex-m3:
+  needs: [zephyr-qemu-cortex-m3]
+  stage: test
+  extends: .lava-test
+  variables:
+    CI_LAVA_JOB_DEFINITION: "https://git.ostc-eu.org/OSTC/infrastructure/lava/lava-config/-/raw/master/lava.ostc-eu.org/job-definitions/ci/qemu-zephyr-cortex-m3.yaml"
+    CI_BUILD_JOB_NAME: zephyr-qemu-cortex-m3
+    CI_REPORT_JOB_NAME: lava-report
+
+lava-zephyr-qemu-x86:
+  needs: [zephyr-qemu-x86]
+  stage: test
+  extends: .lava-test
+  variables:
+    CI_LAVA_JOB_DEFINITION: "https://git.ostc-eu.org/OSTC/infrastructure/lava/lava-config/-/raw/master/lava.ostc-eu.org/job-definitions/ci/qemu-zephyr-x86.yaml"
+    CI_BUILD_JOB_NAME: zephyr-qemu-x86
+    CI_REPORT_JOB_NAME: lava-report
+
+##
+## Get the results back from LAVA.
+##
+lava-report:
+  needs: [lava-zephyr-96b-nitrogen, lava-zephyr-qemu-cortex-m3, lava-zephyr-qemu-x86]
+  extends: .lava-report

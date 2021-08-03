@@ -1,0 +1,88 @@
+From db86861276bc003c864507b3d63a985ce4f9e29b Mon Sep 17 00:00:00 2001
+From: Zbigniew Bodek <zbigniew.bodek@huawei.com>
+Date: Wed, 19 May 2021 13:44:00 +0200
+Subject: [PATCH] Bluetooth: 6lowpan: fix direct peer-to-peer connections
+
+If there is no route information in skb, peer_lookup_dst()
+checks private gw address stored in the skb's control
+buffer. If then gw is not zero (as verified by ipv6_addr_any())
+it is assigned to be a destination address - nexthop.
+Currently, there is no longer a case when peer_lookup_dst()
+is called and gw is initialized to a sane value so
+if there is no route in skb, and skb's control buffer
+is not zero (which may happen while skb traverses the stack),
+nexthop will be set to a spurious value and hence a valid
+peer will not be found.
+
+Assuming module is loaded, 6LoWPAN initialized, bt0 available,
+this problem can be seen when setting up a TCP connection:
+
+1. Enable dynamic debug
+echo "file 6lowpan.c +plf" > /sys/kernel/debug/dynamic_debug/control
+
+2. Try to connect to a peer over TCP
+nc -6 fe80::d9e7:2fff:fe33:959d%bt0 1883
+
+Example debugging output:
+setup_header:421: dest IP fe80::d9e7:2fff:fe33:959d
+peer_lookup_dst:175: peers 1 addr fe80::d9e7:2fff:fe33:959d rt 00000000
+peer_lookup_dst:198: gw ::400:40:100:0
+peer_lookup_dst:203: dst addr d9:e7:2f:33:95:9d dst type 2 ip fe80::d9e7:2fff:fe33:959d
+setup_header:430: no such peer
+
+Fix this issue by removing a leftover gw case as well as gw
+handling entirely. Use given destination address as nexthop
+in case there is no routing information provided.
+
+Signed-off-by: Zbigniew Bodek <zbigniew.bodek@huawei.com>
+Signed-off-by: Wojciech Zmuda <wojciech.zmuda@huawei.com>
+---
+ net/bluetooth/6lowpan.c | 21 +++------------------
+ 1 file changed, 3 insertions(+), 18 deletions(-)
+
+diff --git a/net/bluetooth/6lowpan.c b/net/bluetooth/6lowpan.c
+index cff4944d5..ba430d135 100644
+--- a/net/bluetooth/6lowpan.c
++++ b/net/bluetooth/6lowpan.c
+@@ -30,7 +30,6 @@ static struct dentry *lowpan_control_debugfs;
+ 
+ struct skb_cb {
+ 	struct in6_addr addr;
+-	struct in6_addr gw;
+ 	struct l2cap_chan *chan;
+ };
+ #define lowpan_cb(skb) ((struct skb_cb *)((skb)->cb))
+@@ -170,27 +169,13 @@ static inline struct lowpan_peer *peer_lookup_dst(struct lowpan_btle_dev *dev,
+ 	BT_DBG("peers %d addr %pI6c rt %p", count, daddr, rt);
+ 
+ 	if (!rt) {
+-		if (ipv6_addr_any(&lowpan_cb(skb)->gw)) {
+-			/* There is neither route nor gateway,
+-			 * probably the destination is a direct peer.
+-			 */
+-			nexthop = daddr;
+-		} else {
+-			/* There is a known gateway
+-			 */
+-			nexthop = &lowpan_cb(skb)->gw;
+-		}
++		/* The destination is a direct peer */
++		nexthop = daddr;
+ 	} else {
+ 		nexthop = rt6_nexthop(rt, daddr);
+-
+-		/* We need to remember the address because it is needed
+-		 * by bt_xmit() when sending the packet. In bt_xmit(), the
+-		 * destination routing info is not set.
+-		 */
+-		memcpy(&lowpan_cb(skb)->gw, nexthop, sizeof(struct in6_addr));
+ 	}
+ 
+-	BT_DBG("gw %pI6c", nexthop);
++	BT_DBG("nexthop %pI6c", nexthop);
+ 
+ 	rcu_read_lock();
+ 
+-- 
+2.25.1
+

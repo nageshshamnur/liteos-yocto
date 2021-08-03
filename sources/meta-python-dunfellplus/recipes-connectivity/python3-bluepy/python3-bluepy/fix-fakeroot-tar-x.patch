@@ -1,0 +1,25 @@
+When running under fakeroot/pseudo, tar defaults to --same-owner which will
+make the tool trying to use the same ownership as it exists in the archive. For
+this specific example, where the archive is using 1000/1000, this would fail
+as:
+
+Operation not permitted\ntar: ./bluez-5.47/sys: Cannot change ownership to uid 1000, gid 1000
+
+Avoid this by forcing the tar tool to not preserve file ownership - which should be the intended behaviour.
+
+Signed-off-by: Andrei Gherzan <andrei.gherzan@huawei.com>
+Upstream-status: Inappropriate [build system specific]
+
+Index: bluepy-1.3.0/bluepy/Makefile
+===================================================================
+--- bluepy-1.3.0.orig/bluepy/Makefile
++++ bluepy-1.3.0/bluepy/Makefile
+@@ -30,7 +30,7 @@ bluepy-helper: $(LOCAL_SRCS) $(IMPORT_SR
+ 	$(CC) -L. $(CFLAGS) $(CPPFLAGS) -o $@ $(LOCAL_SRCS) $(IMPORT_SRCS) $(LDLIBS)
+ 
+ $(IMPORT_SRCS): bluez-src.tgz
+-	tar xzf $<
++	tar -xz --no-same-owner -f $<
+ 	touch $(IMPORT_SRCS)
+ 
+ .PHONY: bluez-tarfile

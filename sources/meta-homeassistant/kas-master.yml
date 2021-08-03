@@ -1,0 +1,9 @@
+header:
+  version: 10
+
+repos:
+  poky:
+    refspec: master
+
+  meta-openembedded:
+    refspec: master

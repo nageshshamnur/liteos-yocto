@@ -1,0 +1,21 @@
+<!--
+SPDX-FileCopyrightText: Huawei Inc.
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
+# Documentation for meta-ohos
+
+The documentation for `meta-ohos` is written as reST files and can be generated
+by using standard make targets:
+
+```
+make
+make clean
+```
+
+Building the documentation requires `sphinx-build` to be available on the host.
+
+# License
+
+All the documentation is licensed as `CC-BY-4.0`.

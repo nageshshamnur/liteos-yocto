@@ -1,0 +1,20 @@
+diff -Naurw ./fdts/stm32mp157a-av96-fw-config.dts ../tfa-source/fdts/stm32mp157a-av96-fw-config.dts
+--- ./fdts/stm32mp157a-av96-fw-config.dts	1970-01-01 01:00:00.000000000 +0100
++++ ../tfa-source/fdts/stm32mp157a-av96-fw-config.dts	2021-04-15 15:57:37.616375534 +0200
+@@ -0,0 +1,6 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Copyright (c) 2020, STMicroelectronics - All Rights Reserved
++ */
++
++#include "stm32mp15-ddr-1g-fw-config.dts"
+diff -Naurw ./fdts/stm32mp157a-avenger96-fw-config.dts ../tfa-source/fdts/stm32mp157a-avenger96-fw-config.dts
+--- ./fdts/stm32mp157a-avenger96-fw-config.dts	2021-04-15 15:58:30.312250097 +0200
++++ ../tfa-source/fdts/stm32mp157a-avenger96-fw-config.dts	1970-01-01 01:00:00.000000000 +0100
+@@ -1,6 +0,0 @@
+-// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+-/*
+- * Copyright (c) 2020, STMicroelectronics - All Rights Reserved
+- */
+-
+-#include "stm32mp15-ddr-1g-fw-config.dts"

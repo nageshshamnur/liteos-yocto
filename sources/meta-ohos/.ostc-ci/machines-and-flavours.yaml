@@ -1,0 +1,134 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Huawei Inc.
+
+# NOTE: This file is included from the manifest repository. It is not
+# self-sufficient.  It is here only because the meta-ohos repository also
+# contains all the flavour and machine definitions and having both in one place
+# allows one to add a new MACHINE and the associated build jobs in one go.
+#
+# Please do not include this file directly.
+
+# The following jobs are documented in docs/ci/shared-jobs.rst
+
+linux-qemu-x86:
+  extends: .build-image
+  variables:
+    MACHINE: qemux86
+    OHOS_BUILD_FLAVOUR: linux
+    OHOS_RECIPE_NAME: allscenarios-image-base-tests
+    # Set OHOS_BUILD_CACHE to "pub", overriding the value defined in the
+    # .build job. This enables sharing of download and sstate-cache created
+    # during this job.
+    #
+    # This is done assuming that there are no non-redistributable or otherwise
+    # tainted build intermediate files, downloads or published artifacts. All
+    # the non-tainted builds help to populate a cache exposed at
+    # https://cache.ostc-eu.org/bitbake
+    OHOS_BUILD_CACHE: "pub"
+    OHOS_BB_LOCAL_CONF_BB_GENERATE_MIRROR_TARBALLS: 1
+
+linux-qemu-x86_64:
+  extends: .build-image
+  variables:
+    MACHINE: qemux86-64
+    OHOS_BUILD_FLAVOUR: linux
+    OHOS_RECIPE_NAME: allscenarios-image-base-tests
+    # See the note on linux-qemu-x86.
+    OHOS_BUILD_CACHE: "pub"
+    OHOS_BB_LOCAL_CONF_BB_GENERATE_MIRROR_TARBALLS: 1
+
+linux-seco-intel-b68:
+  extends: .build-linux
+  variables:
+    MACHINE: seco-intel-b68
+
+linux-seco-imx8mm-c61:
+  extends: .build-linux
+  variables:
+    MACHINE: seco-imx8mm-c61
+    # This platform requires proprietary resources to boot.
+    # See build-generic.yaml for explanation of OHOS_BB_LOCAL_CONF_ variables.
+    OHOS_BB_LOCAL_CONF_ACCEPT_FSL_EULA: 1
+
+linux-stm32mp1-av96:
+  extends: .build-image
+  variables:
+    OHOS_BUILD_FLAVOUR: linux
+    OHOS_RECIPE_NAME: allscenarios-image-base-tests
+    MACHINE: stm32mp1-av96
+
+linux-raspberrypi4-64:
+  extends: .build-linux
+  variables:
+    MACHINE: raspberrypi4-64
+
+zephyr-qemu-x86:
+  extends: .build-image
+  variables:
+    MACHINE: qemu-x86
+    # See the note on linux-qemu-x86.
+    OHOS_BUILD_CACHE: "pub"
+    OHOS_BB_LOCAL_CONF_BB_GENERATE_MIRROR_TARBALLS: 1
+    OHOS_RECIPE_NAME: zephyr-philosophers
+    OHOS_BUILD_FLAVOUR: zephyr
+
+zephyr-qemu-cortex-m3:
+  extends: .build-image
+  variables:
+    MACHINE: qemu-cortex-m3
+    # See the note on linux-qemu-x86.
+    OHOS_BUILD_CACHE: "pub"
+    OHOS_BB_LOCAL_CONF_BB_GENERATE_MIRROR_TARBALLS: 1
+    OHOS_RECIPE_NAME: zephyr-philosophers
+    OHOS_BUILD_FLAVOUR: zephyr
+
+zephyr-96b-nitrogen:
+  extends: .build-image
+  variables:
+    MACHINE: 96b-nitrogen
+    OHOS_RECIPE_NAME: zephyr-philosophers
+    OHOS_BUILD_FLAVOUR: zephyr
+
+zephyr-96b-nitrogen-tests:
+  extends: .build-image
+  variables:
+    MACHINE: 96b-nitrogen
+    OHOS_RECIPE_NAME: zephyr-kernel-test-all
+    OHOS_BUILD_FLAVOUR: zephyr
+
+zephyr-96b-avenger:
+  extends: .build-zephyr
+  variables:
+    MACHINE: 96b-avenger96
+
+zephyr-nrf52840dk-nrf52840:
+  extends: .build-zephyr
+  variables:
+    MACHINE: nrf52840dk-nrf52840
+
+zephyr-arduino-nano-33-ble:
+  extends: .build-zephyr
+  variables:
+    MACHINE: arduino-nano-33-ble
+
+freertos-armv5:
+  extends: .build-freertos
+  variables:
+    MACHINE: qemuarmv5
+    # See the note on linux-qemu-x86.
+    OHOS_BUILD_CACHE: "pub"
+    OHOS_BB_LOCAL_CONF_BB_GENERATE_MIRROR_TARBALLS: 1
+
+blueprint-smartpanel-zephyr:
+  extends: .build-zephyr
+  variables:
+    MACHINE: 96b-nitrogen
+    DISTRO: allscenarios-zephyr-blueprint-dashboard
+    OHOS_BITBAKE_TARGETS: "zephyr-blueprint-smarthome-sensors zephyr-blueprint-smarthome-switch"
+
+blueprint-smartpanel-linux:
+  extends: .build-linux
+  variables:
+    MACHINE: stm32mp1-av96
+    DISTRO: allscenarios-linux-blueprint-dashboard
+    OHOS_BITBAKE_TARGETS: "blueprint-dashboard-gateway-image"

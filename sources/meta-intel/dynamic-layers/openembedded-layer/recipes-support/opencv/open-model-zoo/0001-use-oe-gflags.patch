@@ -1,0 +1,33 @@
+From 56078933a8397b7fae146156743408319eac1ae0 Mon Sep 17 00:00:00 2001
+From: Anuj Mittal <anuj.mittal@intel.com>
+Date: Mon, 19 Oct 2020 23:29:23 +0800
+Subject: [PATCH] demos: use gflags from meta-oe
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Anuj Mittal <anuj.mittal@intel.com>
+---
+ demos/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/demos/CMakeLists.txt b/demos/CMakeLists.txt
+index e5f17231..08d4e4e6 100644
+--- a/demos/CMakeLists.txt
++++ b/demos/CMakeLists.txt
+@@ -90,11 +90,11 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+ endif()
+ ####################################
+ 
+-set (GFLAGS_IS_SUBPROJECT TRUE)
++set (GFLAGS_IS_SUBPROJECT FALSE)
+ set (HAVE_SYS_STAT_H 1)
+ set (HAVE_INTTYPES_H 1)
+ 
+-add_subdirectory(thirdparty/gflags)
++#add_subdirectory(thirdparty/gflags)
+ 
+ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+-- 
+2.26.2
+

@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Huawei Inc.
+
+stages:
+  - compliance
+  - build
+  - test
+
+include:
+ - project: 'OSTC/infrastructure/pipelines'
+   file:
+    - 'dco.yaml'
+ - project: 'OSTC/OHOS/manifest'
+   file:
+    # Include the set of generic build rules.
+    - '.ostc-ci/build-generic.yaml'
+    # Include the set of build flavours.
+    - '.ostc-ci/build-flavours.yaml'
+    # Include the set of jobs using the default manifest.
+    - '.ostc-ci/default-targets.yaml'
+
+dco:
+  extends: .dco
+
+# Customize the generic .build job, included from build-generic.yaml above,
+# with settings for testing updates to the meta-av96 git repository.
+.build:
+  variables:
+    # The path of the git repository to deviate from what the git-repo manifest
+    # prepares. This effectively allows testing incoming changes that match the
+    # repository holding this CI pipeline.
+    #
+    # The path is relative to the checked out "sources/" directory.
+    OHOS_CI_GIT_REPO_PATH: "meta-av96"
+  artifacts:
+    # Disable collection of image artifacts. They are not used here and they
+    # are expensive to upload and store.
+    paths: []
+  rules:
+    # Perform bitbake build when a merge request is created.
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        # React to changes to meta-layers.
+        - meta-*/**/*
+        # Run this job in case the pipeline changes.
+        - .ostc-ci/*.yml

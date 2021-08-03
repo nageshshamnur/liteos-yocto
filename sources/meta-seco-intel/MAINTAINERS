@@ -1,0 +1,18 @@
+This file contains a list of BSP maintainers for the BSPs contained in
+the meta-seco-intel repository.
+
+Please keep this list in alphabetical order.
+
+Maintainers List (try to look for most precise areas first)
+
+		-----------------------------------
+
+M:	Alberto Merciai <alberto.merciai@seco.com>
+F:	*
+
+M:	Ettore Chimenti <ettore.chimenti@seco.com>
+F:	*
+
+M:	Tommaso Merciai <tommaso.merciai@seco.com>
+F:	conf/
+
