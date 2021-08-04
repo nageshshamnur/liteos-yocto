@@ -11,7 +11,7 @@ HOMEPAGE = "https://gitee.com/openharmony"
 SECTION = "kernel"
 LICENSE  = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://device_qemu/LICENSE;md5=98c2e72b17fae6c40fb14fd5e43b29ec"
-#DEPENDS = "libgcc newlib libgloss"
+DEPENDS = "libgcc newlib libgloss"
 # No clang support until the build system is fixed
 TOOLCHAIN = "gcc"
 
@@ -31,7 +31,7 @@ SRC_URI = "\
 
 S = "${WORKDIR}/git"
 
-COMPATIBLE_MACHINE = "(qemuriscv32|qemuriscv64)"
+COMPATIBLE_MACHINE = "(baremetal-riscv32nf|qemuriscv32|qemuriscv64)"
 
 do_configure_prepend() {
 	cd ${S}/device_qemu/riscv32_virt
