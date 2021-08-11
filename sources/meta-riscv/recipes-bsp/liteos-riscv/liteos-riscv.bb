@@ -31,7 +31,7 @@ SRC_URI = "\
 
 S = "${WORKDIR}/git"
 
-COMPATIBLE_MACHINE = "(baremetal-riscv32nf|qemuriscv32|qemuriscv64)"
+COMPATIBLE_MACHINE = "(baremetal-riscv32|baremetal-riscv32nf|qemuriscv32|qemuriscv32nf|qemuriscv64)"
 
 do_configure_prepend() {
 	cd ${S}/device_qemu/riscv32_virt
