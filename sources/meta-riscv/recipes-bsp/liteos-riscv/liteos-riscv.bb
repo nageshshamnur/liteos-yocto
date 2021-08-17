@@ -17,17 +17,15 @@ TOOLCHAIN = "gcc"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-
-SRCREV_qemu = "2c752fd4e995c473d77e17225629c286dcf3eec2"
-SRCREV_liteosm = "403d6dc428cd1bff3fbb38122e1001fab706e6a5"
+SRCREV_qemu = "3379a53a2a7c7b1b9f2221a850126316387f194b"
+SRCREV_liteosm = "0a140ef79bd17eca09e3404f4b1df8f00d2b3451"
 SRCREV_boundsfn = "e25097d4fa5a0f0e2ed70859eda09b1ae256c182"
 
 SRC_URI = "\
-	  git://gitee.com/openharmony/device_qemu.git;protocol=https;destsuffix=git/device_qemu;name=qemu\
-	  git://gitee.com/openharmony/kernel_liteos_m.git;protocol=https;destsuffix=git/kernel-liteos-m;name=liteosm\
-	  git://gitee.com/openharmony/third_party_bounds_checking_function.git;protocol=https;destsuffix=git/third_party_bounds_checking_function;name=boundsfn\
-	  file://0001-makefile-changes.patch \
-	  "
+          git://gitee.com/NageshShamnur/device_qemu.git;protocol=https;branch=standlone-liteosm;destsuffix=git/device_qemu;name=qemu\
+          git://gitee.com/NageshShamnur/kernel_liteos_m.git;protocol=https;destsuffix=git/kernel-liteos-m;name=liteosm\
+          git://gitee.com/openharmony/third_party_bounds_checking_function.git;protocol=https;destsuffix=git/third_party_bounds_checking_function;name=boundsfn\
+          "
 
 S = "${WORKDIR}/git"
 
