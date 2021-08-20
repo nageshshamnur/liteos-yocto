@@ -1,0 +1,137 @@
+From a1b9264a507270239963de2759fcf416fda947ab Mon Sep 17 00:00:00 2001
+From: Nagesh <nagesh.shamnur@huawei.com>
+Date: Tue, 3 Aug 2021 20:21:29 +0530
+Subject: [PATCH 1/1] makefile changes
+
+Signed-off-by: Nagesh <nagesh.shamnur@huawei.com>
+---
+ device_qemu/riscv32_virt/Makefile | 68 +++++++++++++++++++++----------------------
+ 1 file changed, 34 insertions(+), 34 deletions(-)
+
+diff --git a/device_qemu/riscv32_virt/Makefile b/device_qemu/riscv32_virt/Makefile
+index f6a6922..5a6cda9 100755
+--- a/device_qemu/riscv32_virt/Makefile
++++ b/device_qemu/riscv32_virt/Makefile
+@@ -12,8 +12,8 @@
+ #limitations under the License.
+ 
+ LITEOSTOPDIR := $(shell if [ "$$PWD" != "" ]; then echo $$PWD; else pwd; fi)
+-LITEOSTOPDIR := ../../../kernel/liteos_m
+-OPENHARMONYDIR := ../../..
++LITEOSTOPDIR := ../../kernel-liteos-m
++OPENHARMONYDIR := ../..
+ LITEOSTOPDIR := $(realpath $(LITEOSTOPDIR))
+ OPENHARMONYDIR := $(realpath $(OPENHARMONYDIR))
+ export LITEOSTOPDIR
+@@ -21,11 +21,11 @@ export LITEOSTOPDIR
+ # Selective compiler
+ COMPILE_NAME := riscv32-unknown-elf
+ #COMPILE_NAME = riscv-none-embed
+-ifeq ($(COMPILE_NAME), riscv-none-embed)
+-CROSS_COMPILE = riscv-none-embed-
+-else
++#ifeq ($(COMPILE_NAME), riscv-none-embed)
++#CROSS_COMPILE = riscv-none-embed-
++#else
+ CROSS_COMPILE := riscv32-unknown-elf-
+-endif
++#endif
+ 
+ # Select instruction set
+ MARCH := rv32imac
+@@ -41,27 +41,27 @@ CFLAGS        := -I $(LITEOSTOPDIR)/utils                                  \
+                  -I $(LITEOSTOPDIR)/kernel/arch/include                    \
+                  -I $(LITEOSTOPDIR)/components/cpup                        \
+                  -I $(LITEOSTOPDIR)/components/power                       \
+-                 -I $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/include     \
+-                 -I $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/include/asm \
+-                 -I $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/driver      \
+-                 -I $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)
++                 -I $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/include     \
++                 -I $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/include/asm \
++                 -I $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/driver      \
++                 -I $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)
+ 
+ LOCAL_CSRCS   := $(wildcard $(LITEOSTOPDIR)/kernel/src/*.c)                       \
+                  $(wildcard $(LITEOSTOPDIR)/kernel/src/mm/*.c)                    \
+                  $(wildcard $(LITEOSTOPDIR)/kernel/arch/risc-v/riscv32/gcc/*.c)   \
+                  $(wildcard $(LITEOSTOPDIR)/utils/*.c)                            \
+-                 $(wildcard $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/*.c)       \
+-                 $(wildcard $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/driver/*.c) \
++                 $(wildcard $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/*.c)       \
++                 $(wildcard $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/driver/*.c) \
+                  $(wildcard $(LITEOSTOPDIR)/components/cpup/*.c)                  \
+                  $(wildcard $(LITEOSTOPDIR)/components/power/*.c)                  \
+-                 $(wildcard $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/libc/*.c)
++                 $(wildcard $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/libc/*.c)
+ 
+ LOCAL_ASMSRCS := $(wildcard $(LITEOSTOPDIR)/kernel/arch/risc-v/riscv32/gcc/*.S)           \
+-                 $(wildcard $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/los_start.S) \
+-                 $(wildcard $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/libc/*.S)
++                 $(wildcard $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/los_start.S) \
++                 $(wildcard $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/libc/*.S)
+ 
+-LOCAL_CSRCS += $(wildcard $(OPENHARMONYDIR)/third_party/bounds_checking_function/src/*.c)
+-CFLAGS += -I $(OPENHARMONYDIR)/third_party/bounds_checking_function/include
++LOCAL_CSRCS += $(wildcard $(OPENHARMONYDIR)/third_party_bounds_checking_function/src/*.c)
++CFLAGS += -I $(OPENHARMONYDIR)/third_party_bounds_checking_function/include
+ 
+ CC = $(CROSS_COMPILE)gcc
+ AS  = $(CROSS_COMPILE)as
+@@ -81,36 +81,36 @@ MAKE = make
+ OUT    := out
+ OBJOUT := $(OUT)/obj
+ LIBA = $(OUT)/libs/libkernel.a
+-LITEOS_LIBS_DIR := -L$(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/$(OUT)/libs
++LITEOS_LIBS_DIR := -L$(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/$(OUT)/libs
+ LITEOS_GCCLIB := libgcc.a
+ LITEOS_TARGET = OHOS_Image
+ LITEOS_LIBDEP := -lkernel -lgcc -lc
+-VERSION_NUM := $(shell $(CC) -dumpversion)
++#VERSION_NUM := $(shell $(CC) -dumpversion)
+ 
+ LITEOS_SSP = -fno-stack-protector
+ LITEOS_COPTS_BASE  := -march=$(MARCH) -mabi=$(MABI) -static -fno-common -O2 $(LITEOS_SSP)
+ LITEOS_COPTS_EXTRA := -ffunction-sections -fdata-sections -fno-omit-frame-pointer -Wno-format-truncation \
+                       -fno-omit-frame-pointer -Wno-format-truncation  -nostdlib  -fno-builtin -fno-strict-aliasing \
+-                      -fsigned-char -fstack-protector-all -std=c99 #-Wall
++                      -fsigned-char -fstack-protector-all -std=c99 -Wl,--build-id=none #-Wall
+ LITEOS_ASOPTS      := -march=$(MARCH) -mabi=$(MABI) -static -O2
+ LITEOS_LD_OPTS     := -Wl,-mcmodel=medany -Wl,-melf32lriscv -nostartfiles -Wl,--gc-sections
+-LITEOS_COMPILER_PATH := $(realpath $(shell $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/compiler_dir.sh  $(CC)))
+-LITEOS_COMPILER_CXX_PATH = $(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/include
+-LITEOS_COMPILER_CXXLIB_PATH = $(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/lib/$(LITEOS_GCCLIB)
+-ifeq ($(COMPILE_NAME), riscv-none-embed)
+-LITEOS_COMPILER_GCCLIB_PATH = -L$(LITEOS_COMPILER_PATH)/lib/gcc/$(COMPILE_NAME)/$(VERSION_NUM)/$(MARCH)/$(MABI)/ \
+-                              -L$(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/lib/$(MARCH)/$(MABI)/
+-else
+-LITEOS_COMPILER_GCCLIB_PATH = -L$(LITEOS_COMPILER_PATH)/lib/gcc/$(COMPILE_NAME)/$(VERSION_NUM)/ \
+-                              -L$(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/lib/
+-endif
+-LITEOS_COMPILER_GCC_INCLUDE = -I $(LITEOS_COMPILER_PATH)/lib/gcc/$(COMPILE_NAME)/$(VERSION_NUM)/include  \
+-                              -I $(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/include
++#LITEOS_COMPILER_PATH := $(realpath $(shell $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/compiler_dir.sh  $(CC)))
++#LITEOS_COMPILER_CXX_PATH = $(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/include
++#LITEOS_COMPILER_CXXLIB_PATH = $(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/lib/$(LITEOS_GCCLIB)
++#ifeq ($(COMPILE_NAME), riscv-none-embed)
++#LITEOS_COMPILER_GCCLIB_PATH = -L$(LITEOS_COMPILER_PATH)/lib/gcc/$(COMPILE_NAME)/$(VERSION_NUM)/$(MARCH)/$(MABI)/ \
++#                              -L$(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/lib/$(MARCH)/$(MABI)/
++#else
++#LITEOS_COMPILER_GCCLIB_PATH = -L$(LITEOS_COMPILER_PATH)/lib/gcc/$(COMPILE_NAME)/$(VERSION_NUM)/ \
++#                              -L$(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/lib/
++#endif
++#LITEOS_COMPILER_GCC_INCLUDE = -I $(LITEOS_COMPILER_PATH)/lib/gcc/$(COMPILE_NAME)/$(VERSION_NUM)/include  \
++#                              -I $(LITEOS_COMPILER_PATH)/$(COMPILE_NAME)/include
+ 
+ LITEOS_CFLAGS  := $(LITEOS_COPTS_BASE) $(LITEOS_COPTS_EXTRA) -DLOSCFG_LIB_LIBC -DLOSCFG_TEST_DEMO=1
+ LITEOS_ASFLAGS := $(LITEOS_ASOPTS)
+-LITEOS_LD_SCRIPT := $(OPENHARMONYDIR)/device/qemu/$(LITEOS_PLATFORM)/Liteos.ld
+-LITEOS_LDFLAGS := $(LITEOS_LD_OPTS) $(LITEOS_COPTS_BASE) -Wl,-T$(LITEOS_LD_SCRIPT) $(LITEOS_LIBS_DIR) $(LITEOS_COMPILER_GCCLIB_PATH)
++LITEOS_LD_SCRIPT := $(OPENHARMONYDIR)/device_qemu/$(LITEOS_PLATFORM)/Liteos.ld
++LITEOS_LDFLAGS := $(LITEOS_LD_OPTS) $(LITEOS_COPTS_BASE) -Wl,-T$(LITEOS_LD_SCRIPT) $(LITEOS_LIBS_DIR) $(LITEOS_COMPILER_GCCLIB_PATH) -Wl,--build-id=none
+ 
+ LOCAL_FLAGS := $(CFLAGS) $(LITEOS_COMPILER_GCC_INCLUDE)
+ LOCAL_COBJS := $(patsubst %.c,$(OBJOUT)/%.o,$(LOCAL_CSRCS))
+-- 
+2.25.1
+

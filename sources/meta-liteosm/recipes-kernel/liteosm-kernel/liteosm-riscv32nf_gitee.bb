@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Huawei Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
-inherit deploy
+require liteosm-kernel-common.inc
 
 SUMMARY = "QEMU target for Gitee LiteOS-M Kernel RISCV32 architecture"
 DESCRIPTION = "Gitee LiteOS-M kernel is designed for microcontrollers with \
@@ -17,21 +17,25 @@ TOOLCHAIN = "gcc"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-SRCREV_qemu = "3379a53a2a7c7b1b9f2221a850126316387f194b"
-SRCREV_liteosm = "0a140ef79bd17eca09e3404f4b1df8f00d2b3451"
+
+SRCREV_qemu = "3dd9df983a2161444dd057bc843e4963e0697acc"
+SRCREV_liteosm = "6a57244291e41c0f2c45149636a2edfdbae62ce0"
 SRCREV_boundsfn = "e25097d4fa5a0f0e2ed70859eda09b1ae256c182"
 
 SRC_URI = "\
-          git://gitee.com/NageshShamnur/device_qemu.git;protocol=https;branch=standlone-liteosm;destsuffix=git/device_qemu;name=qemu\
-          git://gitee.com/NageshShamnur/kernel_liteos_m.git;protocol=https;destsuffix=git/kernel-liteos-m;name=liteosm\
-          git://gitee.com/openharmony/third_party_bounds_checking_function.git;protocol=https;destsuffix=git/third_party_bounds_checking_function;name=boundsfn\
-          "
+	  git://gitee.com/NageshShamnur/device_qemu.git;protocol=https;branch=standlone-liteosm;destsuffix=git/device_qemu;name=qemu\
+	  git://gitee.com/NageshShamnur/kernel_liteos_m.git;protocol=https;destsuffix=git/kernel-liteos-m;name=liteosm\
+	  git://gitee.com/openharmony/third_party_bounds_checking_function.git;protocol=https;destsuffix=git/third_party_bounds_checking_function;name=boundsfn\
+	  "
 
 S = "${WORKDIR}/git"
 
 COMPATIBLE_MACHINE = "(baremetal-riscv32|baremetal-riscv32nf|qemuriscv32|qemuriscv32nf|qemuriscv64)"
 
+IMAGE_FEATURES_append = " read-only-rootfs"
+
 do_configure_prepend() {
+	bb.plain(" PN: %s " % ${PN} );
 	cd ${S}/device_qemu/riscv32_virt
 	oe_runmake clean
 }
@@ -52,7 +56,8 @@ do_compile() {
 
 	export LITEOS_COMPILER_GCC_INCLUDE=" -I${RECIPE_SYSROOT}/usr/include"
         cd ${S}/device_qemu/riscv32_virt
-        oe_runmake --trace
+        ##oe_runmake --trace
+        make --trace
 }
 
 do_install[noexec] = "1"

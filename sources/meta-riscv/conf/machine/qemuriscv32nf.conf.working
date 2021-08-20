@@ -2,7 +2,9 @@
 #@NAME: generic riscv32 soft-float machine
 #@DESCRIPTION: Machine configuration for running a generic riscv32 soft-float OS
 
-require conf/machine/include/riscv/qemuriscv.inc
+IMAGE_PKGTYPE = "ipk"
+
+require include/qemuriscv32nf.inc
 
 DEFAULTTUNE = "riscv32nf"
 
@@ -14,6 +16,13 @@ XVISOR_PLAT = "riscv/virt32"
 EXTRA_IMAGEDEPENDS += "u-boot"
 UBOOT_MACHINE = "qemu-riscv32_smode_defconfig"
 UBOOT_ELF = "u-boot"
+
+# qemuboot options
+#IMAGE_CLASSES += "qemuboot"
+#QB_MACHINE = "-machine virt"
+#QB_MEM = "-m 128"
+#QB_DEFAULT_KERNEL = "bzImage"
+#QB_KERNEL_CMDLINE_APPEND = "root=dev/vda or console=ttyS0" 
 
 # Prelink does not yet work
 USER_CLASSES_remove = "image-prelink"
