@@ -22,7 +22,7 @@ inherit core-image
 IMAGE_CLASSES += "qemuboot"
 QB_SYSTEM_NAME = "qemu-system-riscv32"
 QB_MACHINE = "-machine virt"
-QB_CPU = "-cpu riscv32nf"
+#QB_CPU = "-cpu riscv32nf"
 QB_MEM = "-m 128"
 QB_KERNEL_CMDLINE_APPEND = "root=dev/vda or console=ttyS0"
 

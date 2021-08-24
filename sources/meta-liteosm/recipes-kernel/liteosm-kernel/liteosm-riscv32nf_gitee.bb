@@ -18,7 +18,7 @@ TOOLCHAIN = "gcc"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 
-SRCREV_qemu = "3dd9df983a2161444dd057bc843e4963e0697acc"
+SRCREV_qemu = "9412805582d898b9bd219f8fc0c2a6854ec7113b"
 SRCREV_liteosm = "6a57244291e41c0f2c45149636a2edfdbae62ce0"
 SRCREV_boundsfn = "e25097d4fa5a0f0e2ed70859eda09b1ae256c182"
 
@@ -32,10 +32,9 @@ S = "${WORKDIR}/git"
 
 COMPATIBLE_MACHINE = "(baremetal-riscv32|baremetal-riscv32nf|qemuriscv32|qemuriscv32nf|qemuriscv64)"
 
-IMAGE_FEATURES_append = " read-only-rootfs"
+IMAGE_FEATURES_append = "read-only-rootfs"
 
 do_configure_prepend() {
-	bb.plain(" PN: %s " % ${PN} );
 	cd ${S}/device_qemu/riscv32_virt
 	oe_runmake clean
 }
@@ -63,7 +62,7 @@ do_compile() {
 do_install[noexec] = "1"
 
 do_deploy () {
-    install -D ${B}/device_qemu/riscv32_virt/out/OHOS_Image ${DEPLOYDIR}/bzImage
+    install -D ${B}/device_qemu/riscv32_virt/out/OHOS_Image ${DEPLOYDIR}/${PN}.elf
 }
 addtask deploy after do_compile
 
